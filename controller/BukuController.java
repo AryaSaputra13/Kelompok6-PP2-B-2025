@@ -20,6 +20,7 @@ public class BukuController {
         this.view = view;
         loadTable();
         actionButton();
+        actionTable();
     }
 
     private void actionButton() {
@@ -28,6 +29,19 @@ public class BukuController {
         view.btnHapus.addActionListener(e -> delete());
         view.btnReset.addActionListener(e -> reset());
     }
+    
+    private void actionTable(){
+        view.tableBuku.getSelectionModel().addListSelectionListener(e -> {
+            int row = view.tableBuku.getSelectedRow();
+            if (row != -1) {
+                view.txtId.setText(view.tableModel.getValueAt(row, 0).toString());
+                view.txtJudul.setText(view.tableModel.getValueAt(row, 1).toString());
+                view.txtPenulis.setText(view.tableModel.getValueAt(row, 2).toString());
+                view.txtStok.setText(view.tableModel.getValueAt(row, 3).toString());
+            }
+        }); 
+    }
+   
 
     private void insert() {
         try {
