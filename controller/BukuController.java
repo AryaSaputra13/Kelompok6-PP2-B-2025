@@ -41,26 +41,68 @@ public class BukuController {
             }
         }); 
     }
-   
+    
+    private boolean validasiInput() {
+        String judul = view.txtJudul.getText().trim();
+        String penulis = view.txtPenulis.getText().trim();
+        String stokText = view.txtStok.getText().trim();
+
+        if (judul.isEmpty() || penulis.isEmpty() || stokText.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Semua field wajib diisi");
+            return false;
+        }
+
+        if (!judul.matches("[a-zA-Z0-9\\s]+")) {
+            JOptionPane.showMessageDialog(view, "Judul hanya boleh berisi huruf dan angka");
+            return false;
+        }
+
+        if (!penulis.matches("[a-zA-Z\\s]+")) {
+            JOptionPane.showMessageDialog(view, "Nama penulis hanya boleh berisi huruf");
+            return false;
+        }
+
+        try {
+            int stok = Integer.parseInt(stokText);
+            if (stok < 0) {
+                JOptionPane.showMessageDialog(view, "Stok tidak boleh negatif");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(view, "Stok harus berupa angka");
+            return false;
+        }
+
+        return true;
+    }
 
     private void insert() {
+        if (!validasiInput()) return;
+
         try {
-            int stok = Integer.parseInt(view.txtStok.getText());
             String sql = "INSERT INTO buku (judul, penulis, stok) VALUES (?,?,?)";
             PreparedStatement ps = connectionDB.configDB().prepareStatement(sql);
             ps.setString(1, view.txtJudul.getText());
             ps.setString(2, view.txtPenulis.getText());
-            ps.setInt(3, stok);
+            ps.setInt(3, Integer.parseInt(view.txtStok.getText()));
             ps.executeUpdate();
 
+            JOptionPane.showMessageDialog(view, "Data buku berhasil ditambahkan");
             loadTable();
             reset();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(view, "Input tidak valid");
+            JOptionPane.showMessageDialog(view, e.getMessage());
         }
     }
 
     private void update() {
+        if (view.txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Pilih data buku terlebih dahulu");
+            return;
+        }
+
+        if (!validasiInput()) return;
+
         try {
             String sql = "UPDATE buku SET judul=?, penulis=?, stok=? WHERE id_buku=?";
             PreparedStatement ps = connectionDB.configDB().prepareStatement(sql);
@@ -70,6 +112,7 @@ public class BukuController {
             ps.setInt(4, Integer.parseInt(view.txtId.getText()));
             ps.executeUpdate();
 
+            JOptionPane.showMessageDialog(view, "Data buku berhasil diubah");
             loadTable();
             reset();
         } catch (Exception e) {
@@ -78,16 +121,31 @@ public class BukuController {
     }
 
     private void delete() {
-        try {
-            String sql = "DELETE FROM buku WHERE id_buku=?";
-            PreparedStatement ps = connectionDB.configDB().prepareStatement(sql);
-            ps.setInt(1, Integer.parseInt(view.txtId.getText()));
-            ps.executeUpdate();
+        if (view.txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Pilih data buku terlebih dahulu");
+            return;
+        }
 
-            loadTable();
-            reset();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(view, e.getMessage());
+        int confirm = JOptionPane.showConfirmDialog(
+                view,
+                "Apakah yakin ingin menghapus data ini?",
+                "Konfirmasi",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                String sql = "DELETE FROM buku WHERE id_buku=?";
+                PreparedStatement ps = connectionDB.configDB().prepareStatement(sql);
+                ps.setInt(1, Integer.parseInt(view.txtId.getText()));
+                ps.executeUpdate();
+
+                JOptionPane.showMessageDialog(view, "Data buku berhasil dihapus");
+                loadTable();
+                reset();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(view, e.getMessage());
+            }
         }
     }
 
