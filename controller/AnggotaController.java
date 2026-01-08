@@ -44,12 +44,32 @@ public class AnggotaController {
             }
         });
     }
+    
+    private boolean validasiInput() {
+        String nama = view.txtNama.getText().trim();
+        String alamat = view.txtAlamat.getText().trim();
+        String noTelp = view.txtNoTelp.getText().trim();
+
+        if (nama.isEmpty() || alamat.isEmpty() || noTelp.isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Semua field wajib diisi");
+            return false;
+        }
+
+        if (!nama.matches("[a-zA-Z\\s]+")) {
+            JOptionPane.showMessageDialog(view, "Nama hanya boleh berisi huruf");
+            return false;
+        }
+
+        if (!noTelp.matches("\\d+")) {
+            JOptionPane.showMessageDialog(view, "No Telp hanya boleh berisi angka");
+            return false;
+        }
+
+        return true;
+    }
 
     private void insert() {
-        if (view.txtNama.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Nama tidak boleh kosong");
-            return;
-        }
+        if (!validasiInput()) return;
 
         try {
             String sql = "INSERT INTO anggota (nama, alamat, no_telp) VALUES (?,?,?)";
@@ -68,7 +88,12 @@ public class AnggotaController {
     }
 
     private void update() {
-        if (view.txtId.getText().isEmpty()) return;
+        if (view.txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(view, "Pilih data terlebih dahulu");
+            return;
+        }
+
+        if (!validasiInput()) return;
 
         try {
             String sql = "UPDATE anggota SET nama=?, alamat=?, no_telp=? WHERE id_anggota=?";
@@ -79,6 +104,7 @@ public class AnggotaController {
             ps.setInt(4, Integer.parseInt(view.txtId.getText()));
             ps.executeUpdate();
 
+            JOptionPane.showMessageDialog(view, "Data berhasil diubah");
             loadTable();
             reset();
         } catch (Exception ex) {
